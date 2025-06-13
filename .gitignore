@@ -1,0 +1,33 @@
+# === JetBrains CLion / IntelliJ IDEA ===
+.idea/
+
+# === CMake build directory ===
+cmake-build-*/
+
+# === CMake-generated files ===
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
+# === Build artifacts ===
+*.o
+*.obj
+*.so
+*.a
+*.out
+*.exe
+*.dll
+*.dylib
+*.asm
+
+# === Logs and temporary files ===
+*.log
+*.tmp
+*.swp
+*~
+
+# === OS-specific ===
+.DS_Store
+Thumbs.db
