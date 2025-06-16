@@ -7,7 +7,21 @@
 
 using namespace std;
 
-enum class TokenType{exit , int_lit , semi, open_paren, close_paren, ident, let, eq, plus};
+enum class TokenType{exit , int_lit , semi, open_paren, close_paren, ident, let, eq, plus, star, sub, div};
+
+
+optional<int> bin_prec(TokenType type) {
+    switch (type) {
+        case TokenType::plus:
+        case TokenType::sub:
+            return 0;
+        case TokenType::star:
+        case TokenType::div:
+            return 1;
+        default:
+            return{};
+    }
+}
 
 struct Token{
     TokenType type;
@@ -37,19 +51,19 @@ public:
                 {
                     tokens.push_back({.type = TokenType::exit});
                     buf.clear();
-                    continue;
+
                 }
              else if(buf == "let")
              {
                  tokens.push_back({ .type =TokenType::let});
                  buf.clear();
-                 continue;
+
              }
              else
                 {
                     tokens.push_back({ .type = TokenType::ident, .value = buf});
                     buf.clear();
-                    continue;
+
                 }
 
             }
@@ -78,22 +92,39 @@ public:
             else if(peek().value() == '='){
                 kazhikk();
                 tokens.push_back({ .type = TokenType::eq});
-                continue;
+
             }
             else if(peek().value() == ';'){
                 kazhikk();
                 tokens.push_back({ .type = TokenType::semi});
-                continue;
+
             }
             else if(peek().value() == '+')
             {
                 kazhikk();
                 tokens.push_back({ .type = TokenType::plus});
-                continue;
+
+            }
+            else if(peek().value() == '-')
+            {
+                kazhikk();
+                tokens.push_back({ .type = TokenType::sub});
+
+            }
+            else if(peek().value() == '/')
+            {
+                kazhikk();
+                tokens.push_back({ .type = TokenType::div});
+
+            }
+            else if(peek().value() == '*') {
+                kazhikk();
+                tokens.push_back({.type = TokenType::star});
+
             }
             else if(isspace(peek().value())){
                 kazhikk();
-                continue;
+
             }
             else{
                 cerr<<"language il illatha saanam itta engane mansilavum"<<endl;

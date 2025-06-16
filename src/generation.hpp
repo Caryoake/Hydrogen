@@ -41,9 +41,63 @@ public:
                 }
 
             }
+            void operator()(const NodeTermParen* term_paren) const
+            {
+                gen->gen_expr(term_paren->expr);
+            }
         };
         TermVisitor visitor({ .gen = this});
         visit(visitor, term->var);
+    }
+
+
+    void gen_bin_expr(const NodeBinExpr* bin_expr)
+    {
+        struct BinEXprVisitor
+        {
+            Generator* gen;
+            void operator()(const NodeBinExprSub* sub) const
+            {
+                gen->gen_expr(sub->lhs);
+                gen->gen_expr(sub->rhs);
+                gen->pop("rbx");
+                gen->pop("rax");
+                gen->m_output << "    sub rax, rbx\n" ;
+                gen->push("rax");
+            }
+            void operator()(const NodeBinExprAdd* add) const
+            {
+                gen->gen_expr(add->lhs);
+                gen->gen_expr(add->rhs);
+                gen->pop("rbx");
+                gen->pop("rax");
+                gen->m_output << "    add rax, rbx\n" ;
+                gen->push("rax");
+            }
+
+            void operator()(const NodeBinExprMulti* mult) const
+            {
+                gen->gen_expr(mult->lhs);
+                gen->gen_expr(mult->rhs);
+                gen->pop("rbx");
+                gen->pop("rax");
+                gen->m_output << "    mul rbx\n" ;
+                gen->push("rax");
+            }
+
+            void operator()(const NodeBinExprDiv* div) const
+            {
+                gen->gen_expr(div->lhs);
+                gen->gen_expr(div->rhs);
+                gen->pop("rbx");
+                gen->pop("rax");
+                gen->m_output << "    div rbx\n" ;
+                gen->push("rax");
+            }
+        };
+
+        BinEXprVisitor visitor { .gen = this};
+        visit(visitor, bin_expr->var);
     }
 
 
@@ -58,12 +112,7 @@ public:
             }
             void operator()(const NodeBinExpr* bin_expr) const
             {
-                gen->gen_expr(bin_expr->add->lhs);
-                gen->gen_expr(bin_expr->add->rhs);
-                gen->pop("rax");
-                gen->pop("rbx");
-                gen->m_output << "    add rax, rbx\n" ;
-                gen->push("rax");
+                gen->gen_bin_expr(bin_expr);
             }
         };
 
