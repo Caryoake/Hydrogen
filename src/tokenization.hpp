@@ -100,6 +100,36 @@ public:
                 buf.clear();
 
             }
+            else if(peek().value() == '/' && peek(1).has_value() && peek(1).value() == '/')
+            {
+                kazhikk();
+                kazhikk();
+                while(peek().has_value() && peek().value() != '\n')
+                {
+                    kazhikk();
+                }
+            }
+            else if(peek().value() == '/' && peek(1).has_value() && peek(1).value() == '*')
+            {
+                kazhikk();
+                kazhikk();
+                while(peek().has_value())
+                {
+                    if(peek().value() == '*' && peek(1).has_value() && peek(1).value() == '/')
+                    {
+                        break;
+                    }
+                    kazhikk();
+                }
+                if(peek().has_value())
+                {
+                    kazhikk();
+                }
+                if(peek().has_value())
+                {
+                    kazhikk();
+                }
+            }
             else if(peek().value() == '(')
             {
                 kazhikk();
