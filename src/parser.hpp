@@ -52,7 +52,11 @@ struct NodeExpr{
     variant<NodeTerm* ,NodeBinExpr*> var;
 };
 
+struct NodeStmt;
 
+struct NodeScope{
+    vector<NodeStmt*> stmts;
+};
 
 struct NodeStmtLet{
     NodeExpr* expr;
@@ -63,8 +67,13 @@ struct NodeStmtExit{
     NodeExpr* expr;
 };
 
+struct NodeStmtIf{
+    NodeExpr* expr;
+    NodeScope* scope;
+};
+
 struct NodeStmt{
-    variant<NodeStmtLet* ,NodeStmtExit* > var;
+    variant<NodeStmtLet* ,NodeStmtExit*, NodeScope*, NodeStmtIf* > var;
 };
 
 struct NodeProg{
@@ -171,14 +180,14 @@ public:
                 mult->rhs = expr_rhs.value();
                 expr->var = mult;
             }
-            else if(op.type == TokenType::sub){
+            else if(op.type == TokenType::minus){
                 auto sub = m_allocator.alloc<NodeBinExprSub>();
                 expr_lhs2->var = expr_lhs->var;
                 sub->lhs = expr_lhs2;
                 sub->rhs = expr_rhs.value();
                 expr->var = sub;
             }
-            else if(op.type == TokenType::div){
+            else if(op.type == TokenType::fslash){
                 auto div = m_allocator.alloc<NodeBinExprDiv>();
                 expr_lhs2->var = expr_lhs->var;
                 div->lhs = expr_lhs2;
@@ -189,6 +198,21 @@ public:
 
         }
         return expr_lhs;
+    }
+
+    optional <NodeScope*> parse_scope()
+    {   if(!kazhich_nokk(TokenType::open_curly))
+        {
+            return {};
+        }
+        auto scope = m_allocator.alloc<NodeScope>();
+        while (auto stmt = parse_stmt()) {
+            auto stmt_ptr = m_allocator.alloc<NodeStmt>();
+            *stmt_ptr = stmt.value();
+            scope->stmts.push_back(stmt_ptr);
+        }
+        kazhich_nokk(TokenType::closed_curly, "Oru '}' missing aanallo");
+        return scope;
     }
 
     optional<NodeStmt> parse_stmt()
@@ -233,6 +257,44 @@ public:
             }
             kazhich_nokk(TokenType::semi, "';' Aaru idum?");
             return NodeStmt { .var = stmt_let };
+        }
+        else if( peek().has_value() && peek().value().type == TokenType::open_curly )
+        {
+            if(auto scope = parse_scope())
+            {
+                return NodeStmt { .var = scope.value() };
+            }
+            else
+            {
+                cerr << "Valid scope kodukk myre" << endl;
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if(auto if_ = kazhich_nokk(TokenType::if_))
+        {
+            kazhich_nokk(TokenType::open_paren, "Expected '('");
+            auto stmt_if = m_allocator.alloc<NodeStmtIf>();
+            if(auto expr = parse_expr())
+            {
+                stmt_if->expr = expr.value();
+            }
+            else
+            {
+                cerr << "Valid expression kodukk myre" << endl;
+                exit(EXIT_FAILURE);
+            }
+            kazhich_nokk(TokenType::close_paren,")' Aaru idum?");
+            if(auto scope = parse_scope())
+            {
+                stmt_if->scope = scope.value();
+                return NodeStmt { .var = stmt_if };
+            }
+            else
+            {
+                cerr << "Valid scope kodukk myre" << endl;
+                exit(EXIT_FAILURE);
+            }
+
         }
         else
         {

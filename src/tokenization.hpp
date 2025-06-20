@@ -7,16 +7,32 @@
 
 using namespace std;
 
-enum class TokenType{exit , int_lit , semi, open_paren, close_paren, ident, let, eq, plus, star, sub, div};
+enum class TokenType {
+    exit,          // Exit keyword
+    int_lit,       // Integer literal
+    semi,          // Semicolon ;
+    open_paren,    // Opening parenthesis (
+    close_paren,   // Closing parenthesis )
+    ident,         // Identifier
+    let,           // Let keyword
+    eq,            // Equal sign =
+    plus,          // Plus operator +
+    star,          // Multiplication operator *
+    minus,           // Subtraction operator -
+    fslash,           // Division operator /
+    open_curly,    // Opening curly brace {
+    closed_curly,   // Closing curly brace }
+    if_             // if statment
+};
 
 
 optional<int> bin_prec(TokenType type) {
     switch (type) {
         case TokenType::plus:
-        case TokenType::sub:
+        case TokenType::minus:
             return 0;
         case TokenType::star:
-        case TokenType::div:
+        case TokenType::fslash:
             return 1;
         default:
             return{};
@@ -58,6 +74,11 @@ public:
                  tokens.push_back({ .type =TokenType::let});
                  buf.clear();
 
+             }
+             else if(buf == "if")
+             {
+                 tokens.push_back({ .type =TokenType::if_});
+                 buf.clear();
              }
              else
                 {
@@ -108,13 +129,25 @@ public:
             else if(peek().value() == '-')
             {
                 kazhikk();
-                tokens.push_back({ .type = TokenType::sub});
+                tokens.push_back({ .type = TokenType::minus});
 
             }
             else if(peek().value() == '/')
             {
                 kazhikk();
-                tokens.push_back({ .type = TokenType::div});
+                tokens.push_back({ .type = TokenType::fslash});
+
+            }
+            else if(peek().value() == '{')
+            {
+                kazhikk();
+                tokens.push_back({ .type = TokenType::open_curly});
+
+            }
+            else if(peek().value() == '}')
+            {
+                kazhikk();
+                tokens.push_back({ .type = TokenType::closed_curly});
 
             }
             else if(peek().value() == '*') {
